@@ -1,0 +1,19 @@
+# Virtual Environment & Node Modules
+backend/venv/
+frontend/node_modules/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django specific
+*.log
+local_settings.py
+db.sqlite3
+.env
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
