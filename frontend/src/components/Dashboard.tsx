@@ -2,6 +2,8 @@ import { useAuth } from '../AuthContext';
 import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import CardForm from './CardForm';
+import ApplicationTracker from './ApplicationTracker';
+
 
 
 
@@ -151,6 +153,7 @@ const Dashboard = () => {
             + Add New Card
           </button>
         </div>
+        <ApplicationTracker />
         {loading && <p>Loading cards...</p>}
         {error && <p className="text-red-500">{error}</p>}
 

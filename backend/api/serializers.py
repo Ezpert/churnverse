@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Card
+from .models import Card, UserProfile
 from django.contrib.auth.models import User
 
 
@@ -22,3 +22,9 @@ class UserSerializer(serializers.ModelSerializer):
             username=validated_data["username"], password=validated_data["password"]
         )
         return user
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ["last_application_date"]

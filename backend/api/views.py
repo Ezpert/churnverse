@@ -1,6 +1,6 @@
 from rest_framework import viewsets, generics, permissions
-from .models import Card
-from .serializers import CardSerializer, UserSerializer
+from .models import Card, UserProfile
+from .serializers import CardSerializer, UserSerializer, UserProfileSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 
@@ -26,3 +26,16 @@ class UserCreate(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class UserProfileDetailView(generics.RetrieveUpdateAPIView):
+    """
+    Handles retrieving and updating the logged-in user's profile.
+    """
+
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile
