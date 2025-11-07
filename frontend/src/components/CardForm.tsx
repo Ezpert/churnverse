@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api/axiosConfig';
+import toast from 'react-hot-toast';
 
 interface Card {
   id: number;
@@ -29,36 +30,46 @@ const CardForm = ({ onSuccess, onCancel, cardToEdit }: CardFormProps) => {
     setError('');
 
     if (!cardToEdit?.id) {
-      try {
-        console.log(`Nickname: ${nickname} | Benefits: ${benefits}`)
-        await api.post('/api/cards/', {
+      const createPromise = async (): Promise<Card> => {
+        const response = await api.post<Card>('/api/cards/', {
           nickname: nickname,
           card_benefits: benefits,
-        });
-        onSuccess();
-      } catch (err) {
-        console.error('Failed to add card: ', err);
-        setError('Could not add the card. Please try again.');
-      } finally {
-        setLoading(false);
-      }
+        })
+        return response.data;
+      };
+      console.log(`Nickname: ${nickname} | Benefits: ${benefits}`)
+      toast.promise(createPromise(), {
+        loading: "Creating Card...",
+        success: (res) => {
+          onSuccess();
+          setLoading(false);
+          return <b>Card created successfully!</b>
+        },
+        error: <b>"Error creating card."</b>,
+      });
+
     } else {
-      try {
-        await api.put(`/api/cards/${cardToEdit?.id}/`, {
+      const editPromise = async (): Promise<Card> => {
+        const response = await api.put<Card>(`/api/cards/${cardToEdit?.id}/`, {
           nickname: nickname,
           card_benefits: benefits,
-        });
-        onSuccess()
-
-      } catch (err) {
-        console.error('Failed to edit card', err);
-        setError("Could not edit the card. Please try again");
-
-      } finally {
-        setLoading(false);
-      }
-    }
-
+        })
+        return response.data;
+      };
+      console.log(`Nickname: ${nickname} | Benefits: ${benefits}`)
+      toast.promise(editPromise(), {
+        loading: "Creating Card...",
+        success: (res) => {
+          onSuccess();
+          setLoading(false);
+          return <b>Edit successful!</b>
+        },
+        error: (err) => {
+          console.error("API Error", err);
+          return <b>Could not save changes.</b>;
+        },
+      });
+    };
   };
 
   return (

@@ -3,12 +3,7 @@ import { useAuth } from './AuthContext';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Register from './components/Register';
-
-
-
-
-
-
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const { tokens } = useAuth();
@@ -16,6 +11,7 @@ function App() {
 
   return (
     <main>
+      <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={tokens ? <Dashboard /> : <Navigate to="/" />} />
@@ -24,11 +20,5 @@ function App() {
     </main>
   );
 }
-
-
-
-
-
-
 
 export default App;

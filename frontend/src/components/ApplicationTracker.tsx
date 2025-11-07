@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import { format, differenceInDays } from 'date-fns';
 import type { UserProfile } from '../types';
+import toast from 'react-hot-toast';
 
 
 const ApplicationTracker = () => {
@@ -31,19 +32,21 @@ const ApplicationTracker = () => {
 
   const pingApplicationDate = async () => {
     const today = format(new Date(), 'yyyy-MM-dd');
-    try {
-      const res = await api.put('/api/profile/', {
+    const updatePromise = async (): Promise<UserProfile> => {
+      const response = await api.put<UserProfile>('/api/profile/', {
         last_application_date: today,
       });
-      console.log(res)
-      setProfile(res.data);
-      // We will replace this with a toast later
-      alert("Application has been updated to today!");
-    } catch (error) {
-      console.error("Failed to update application date: ", error);
-      alert("Error: Could not update the date.");
-    }
+      return response.data;
+    };
 
+    toast.promise(updatePromise(), {
+      loading: 'Updating date...',
+      success: (res) => {
+        setProfile(res);
+        return <b>Date updated successfully!</b>
+      },
+      error: <b>Could not update the date.</b>,
+    });
   };
 
   const getStatus = () => {

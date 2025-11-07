@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import CardForm from './CardForm';
 import ApplicationTracker from './ApplicationTracker';
+import ConfirmationModal from './ConfirmationModal';
+import toast from 'react-hot-toast';
+
 
 
 
@@ -21,6 +24,8 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [cardToEdit, setCardToEdit] = useState<Card | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState<number | null>(null);
 
   const getBorderClass = (lastUsedDateString: string | null): string => {
 
@@ -63,40 +68,51 @@ const Dashboard = () => {
   };
 
   const handlePing = async (cardID: number) => {
-
-    try {
+    const pingPromise = async (): Promise<void> => {
       await api.patch(`api/cards/${cardID}/`, {
         "last_used": new Date().toISOString().split('T')[0],
       });
-      fetchCards();
-    } catch (err) {
-      console.error("Failed to ping card: ", err);
-      setError("Could not ping card!");
-
-    } finally {
-      setLoading(false);
+      return;
     }
-
+    toast.promise(pingPromise(), {
+      loading: "Pinging card...",
+      success: () => {
+        fetchCards();
+        return <b>Card successfully pinged!</b>;
+      },
+      error: (err) => {
+        console.error("Failed to ping card:", err);
+        return <b>Could not ping card!</b>;
+      },
+    });
   }
-  const handleDelete = async (cardID: number) => {
 
-    if (!window.confirm("Are you sure?"))
-      return
-    try {
-
-      await api.delete(`/api/cards/${cardID}/`);
-      fetchCards();
-      console.log("Deleted card: ", cardID);
-    } catch (err) {
-      console.error("Failed to delete card:", err);
-      setError("Could not delete card");
+  const handleDeleteClick = (cardID: number) => {
+    setCardToDelete(cardID);
+    setIsModalOpen(true);
+  };
 
 
-    } finally {
-      setLoading(false);
-    }
+  const handleConfirmDelete = () => {
+    if (cardToDelete === null) return;
 
+    setIsModalOpen(false);
 
+    const promise = api.delete(`/api/cards/${cardToDelete}/`);
+
+    toast.promise(promise.then(() => cardToDelete), {
+      loading: 'Deleting card...',
+      success: () => {
+        fetchCards()
+        return <b>Card deleted successfully.</b>;
+      },
+      error: (err) => {
+        console.error("Delete failed:", err);
+        return <b>Could not delete card.</b>;
+      },
+    });
+
+    setCardToDelete(null);
   };
 
   useEffect(() => {
@@ -106,7 +122,6 @@ const Dashboard = () => {
 
 
   return (
-
     <div className="min-h-screen bg-gray-900 text-white">
       <header className="bg-gray-800 shadow">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -140,6 +155,14 @@ const Dashboard = () => {
           cardToEdit={cardToEdit}
         />
       )}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Card"
+        message="Are you sure you want to delete this card? This action cannot be undone."
+      />
+
 
 
       <main>
@@ -176,7 +199,7 @@ const Dashboard = () => {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(card.id)}
+                        onClick={() => handleDeleteClick(card.id)}
                       >
                         Delete!
                       </button>
